@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".Add_NotesActivity"
+    android:background="@color/black">
+
+    <com.google.android.material.textfield.TextInputEditText
+        android:id="@+id/etTitle"
+        android:layout_width="0dp"
+        android:layout_height="60sp"
+        android:hint="Title"
+        android:textColorHint="@color/white"
+        android:background="@null"
+        android:textColor="@color/white"
+        android:inputType="text"
+        android:padding="20sp"
+        android:maxLength="50"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toStartOf="@+id/toolBarAddNotes"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="2sp"
+        android:background="#636363"
+        app:layout_constraintTop_toTopOf="@+id/etDescription" />
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolBarAddNotes"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:menu="@menu/menu_add_notes"
+        />
+
+    <com.google.android.material.textfield.TextInputEditText
+        android:id="@+id/etDescription"
+        android:layout_width="match_parent"
+        android:layout_height="0sp"
+        android:padding="20sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/etTitle"
+        android:inputType="textMultiLine"
+        android:background="@null"
+        android:scrollbars="vertical"
+        android:hint="add Notes Here"
+        android:textColorHint="@color/white"
+        android:textColor="@color/white"
+        android:gravity="top|left"
+        />
+
+    <View
+        android:id="@+id/pick_color_button"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        app:layout_constraintBottom_toBottomOf="@+id/btnSaveNotes"
+        app:layout_constraintEnd_toStartOf="@+id/btnSaveNotes"
+        android:layout_marginEnd="10dp"
+        android:background="@color/app_logo_color"
+        app:layout_constraintTop_toTopOf="@+id/btnSaveNotes"/>
+
+
+    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+        android:id="@+id/btnSaveNotes"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:icon="@drawable/baseline_check_24"
+        app:iconTint="@color/app_logo_color"
+        app:iconSize="35sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_margin="30sp"
+        />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

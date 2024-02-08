@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+        <item android:title="view">
+            <menu>
+                <item android:id="@+id/listViewLayout" android:title="list View"/>
+                <item android:id="@+id/gridViewLayout" android:title="Grid View"/>
+                <item android:id="@+id/staggeredLayout" android:title="Staggered View"/>
+            </menu>
+        </item>
+</menu>
