@@ -6,11 +6,13 @@ public class ExpenseModel implements Serializable {
     private final String titleNotes;
     private final String descriptionNotes;
     private final int color;
+    private final String createDate;
 
-    public ExpenseModel(String titleNotes, String descriptionNotes,int color) {
+    public ExpenseModel(String titleNotes, String descriptionNotes,int color ,String createDate) {
         this.titleNotes = titleNotes;
         this.descriptionNotes = descriptionNotes;
         this.color=color;
+        this.createDate=createDate;
     }
 
     public String getTitleNotes() {
@@ -23,5 +25,9 @@ public class ExpenseModel implements Serializable {
 
     public int getColor() {
         return color;
+    }
+
+    public String getCreateDate() {
+        return createDate;
     }
 }

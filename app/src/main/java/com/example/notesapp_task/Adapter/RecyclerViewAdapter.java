@@ -69,6 +69,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 
         holder.title.setText(expenseModel.getTitleNotes());
         holder.description.setText(expenseModel.getDescriptionNotes());
+        holder.date.setText(expenseModel.getCreateDate());
 
 
 //        int a= position%4;
@@ -111,7 +112,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 
     public class ViewHolder extends RecyclerView.ViewHolder {
 
-        private TextView title, description ;
+        private TextView title, description,date ;
         CardView listCardView;
         MaterialCardView gridCardView,staggeredCardView;
         public ViewHolder(View itemView) {
@@ -122,6 +123,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
             listCardView = itemView.findViewById(R.id.listCard);
             gridCardView = itemView.findViewById(R.id.gridCard);
             staggeredCardView=itemView.findViewById(R.id.staggeredCard);
+            date=itemView.findViewById(R.id.createDate);
         }
     }
 }

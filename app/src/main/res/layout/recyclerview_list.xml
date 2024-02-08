@@ -50,6 +50,14 @@
                 android:textSize="16sp"
                 android:text="@string/description"
                 android:textColor="@color/black"/>
+            <TextView
+                android:id="@+id/createDate"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:maxLines="1"
+                android:textSize="12sp"
+                android:text="date"
+                android:textColor="@color/black"/>
 
         </LinearLayout>
 

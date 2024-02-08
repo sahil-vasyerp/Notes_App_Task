@@ -3,13 +3,20 @@ package com.example.notesapp_task;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.notesapp_task.ModelClass.ExpenseModel;
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 import com.google.android.material.textfield.TextInputEditText;
+
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
 
 import yuku.ambilwarna.AmbilWarnaDialog;
 
@@ -22,6 +29,8 @@ public class Add_NotesActivity extends AppCompatActivity implements View.OnClick
     ExpenseModel expenseModel;
     View picColorButton;
     Context context;
+    Date date;
+    private String currentDate;
     int mDefaultColor;
 
 
@@ -54,13 +63,29 @@ public class Add_NotesActivity extends AppCompatActivity implements View.OnClick
         etDescription = findViewById(R.id.etDescription);
         btnSave = findViewById(R.id.btnSaveNotes);
         picColorButton=findViewById(R.id.pick_color_button);
+
+
         context=Add_NotesActivity.this;
         mDefaultColor =context.getColor(R.color.list_zero);
 
 
 
+
+
         btnSave.setOnClickListener(this);
         picColorButton.setOnClickListener(this);
+
+
+        getDate();
+
+    }
+
+    private void getDate() {
+        date= Calendar.getInstance().getTime();
+        SimpleDateFormat df=new SimpleDateFormat("dd-MMM-yyyy hh:mm:ss", Locale.getDefault());
+        currentDate=df.format(date);
+
+        Log.d("currentDate", "initViews: "+currentDate);
 
 
     }
@@ -70,15 +95,27 @@ public class Add_NotesActivity extends AppCompatActivity implements View.OnClick
         String addTitle = etTitle.getText().toString().trim();
         String addDescription = etDescription.getText().toString().trim();
 
-        int position = getIntent().getIntExtra("position",-1);
 
-        Intent i = new Intent();
-        i.putExtra("position", position);
-        i.putExtra("title", addTitle);
-        i.putExtra("description", addDescription);
-        i.putExtra("color",mDefaultColor);
-        setResult(RESULT_OK, i);
-        finish();
+        if (addTitle.isEmpty() && addDescription.isEmpty())
+        {
+            Toast.makeText(this,"No value ",Toast.LENGTH_SHORT).show();
+        }
+        else
+        {
+            int position = getIntent().getIntExtra("position",-1);
+
+            Intent i = new Intent();
+            i.putExtra("position", position);
+            i.putExtra("title", addTitle);
+            i.putExtra("description", addDescription);
+            i.putExtra("date",currentDate);
+            i.putExtra("color",mDefaultColor);
+            setResult(RESULT_OK, i);
+            finish();
+
+        }
+
+
 
     }
 

@@ -1,5 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item android:title="sort">
+        <menu>
+            <item android:title="sort by Alphabetical">
+
+                <menu>
+                    <item android:id="@+id/ascendingList" android:title="Ascending"/>
+                    <item android:id="@+id/descendingList" android:title="Descending"/>
+                </menu>
+
+            </item>
+            <item android:title="sort by date">
+                <menu>
+                    <item android:id="@+id/ascendingDate" android:title="Ascending"/>
+                    <item android:id="@+id/descendingDate" android:title="Descending"/>
+                </menu>
+            </item>
+
+        </menu>
+    </item>
         <item android:title="view">
             <menu>
                 <item android:id="@+id/listViewLayout" android:title="list View"/>

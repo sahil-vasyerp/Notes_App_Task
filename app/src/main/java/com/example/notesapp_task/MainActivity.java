@@ -2,7 +2,6 @@ package com.example.notesapp_task;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -22,6 +21,8 @@ import com.google.android.material.floatingactionbutton.ExtendedFloatingActionBu
 import com.google.android.material.search.SearchBar;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener, RecyclerViewAdapter.OnClickListener {
 
@@ -34,6 +35,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     ArrayList<ExpenseModel> arrayList = new ArrayList<>();
     ExpenseModel expenseModel;
     public static final String NEXT_SCREEN = "details_screen";
+    private boolean ascendingClickedTitle = false;
+    private boolean descendingClickedTitle = false;
+    private boolean ascendingClickedDate = false;
+    private boolean descendingClickedDate = false;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -109,25 +116,37 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             int positionUpdate = data.getIntExtra("position", -1);
             String addTitle = data.getStringExtra("title");
             String addDescription = data.getStringExtra("description");
-            int color=data.getIntExtra("color",234341);
-            Log.d("TAG", "onActivityResult: "+color);
+            String currentDate = data.getStringExtra("date");
+
+            int color=data.getIntExtra("color",0);
+
 
             if (requestCode == RESULT_FIRST_USER)
             {
 
-                if (addDescription.isEmpty())
-                {
+                arrayList.add(new ExpenseModel(addTitle, addDescription,color,currentDate));
+                adapter.notifyDataSetChanged();
 
+                if (ascendingClickedTitle){
+                    ascendingOrder();
                 }
-                else
+                else if (descendingClickedTitle){
+
+                    descendingOrder();
+                }
+                else if (ascendingClickedDate)
                 {
-                    arrayList.add(0,new ExpenseModel(addTitle, addDescription,color));
-                    adapter.notifyDataSetChanged();
+                    ascendingOrderByDate();
+                }
+                else if (descendingClickedDate)
+                {
+                    descendingOrderByDate();
+
                 }
 
 
             } else {
-                arrayList.set(positionUpdate, new ExpenseModel(addTitle, addDescription,color));
+                arrayList.set(positionUpdate, new ExpenseModel(addTitle, addDescription,color,currentDate));
                 adapter.notifyItemChanged(position);
 
             }
@@ -168,9 +187,92 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 return true;
 
             }
+            case R.id.ascendingList:
+            {
+
+                ascendingClickedTitle=true;
+                descendingClickedTitle=false;
+                ascendingOrder();
+
+                return true;
+            }
+            case R.id.descendingList:
+            {
+
+                ascendingClickedTitle=false;
+                descendingClickedTitle=true;
+                descendingOrder();
+
+                return true;
+            }
+            case R.id.ascendingDate:
+            {
+                ascendingClickedDate = true;
+                descendingClickedDate = false;
+                ascendingOrderByDate();
+
+                return true;
+            }
+            case R.id.descendingDate:
+            {
+                ascendingClickedDate =  false;
+                descendingClickedDate = true;
+                descendingOrderByDate();
+            }
         }
 
         return (super.onOptionsItemSelected(item));
+    }
+
+    private void descendingOrderByDate()
+    {
+        Collections.sort(arrayList, new Comparator<ExpenseModel>() {
+            @Override
+            public int compare(ExpenseModel o1, ExpenseModel o2) {
+                return o2.getCreateDate().compareTo(o1.getCreateDate());
+            }
+        });
+        adapter.notifyDataSetChanged();
+
+    }
+
+    private void ascendingOrderByDate()
+    {
+        Collections.sort(arrayList, new Comparator<ExpenseModel>() {
+            @Override
+            public int compare(ExpenseModel o1, ExpenseModel o2) {
+
+                return o1.getCreateDate().compareTo(o2.getCreateDate());
+            }
+        });
+        adapter.notifyDataSetChanged();
+
+    }
+
+    private void ascendingOrder()
+    {
+        Collections.sort(arrayList, new Comparator<ExpenseModel>() {
+            @Override
+            public int compare(ExpenseModel o1, ExpenseModel o2) {
+
+                return o1.getTitleNotes().compareTo(o2.getTitleNotes());
+            }
+        });
+        adapter.notifyDataSetChanged();
+
+
+    }
+
+    private void descendingOrder()
+    {
+        Collections.sort(arrayList, new Comparator<ExpenseModel>() {
+            @Override
+            public int compare(ExpenseModel o1, ExpenseModel o2) {
+                return o2.getTitleNotes().compareTo(o1.getTitleNotes());
+            }
+        });
+        adapter.notifyDataSetChanged();
+
     }
 
     @Override
