@@ -5,12 +5,14 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.example.notesapp_task.ModelClass.ExpenseModel;
 import com.example.notesapp_task.R;
 import com.google.android.material.card.MaterialCardView;
@@ -72,11 +74,19 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
         holder.date.setText(expenseModel.getCreateDate());
 
 
+
 //        int a= position%4;
 
 
                 if (type.equals("1")) {
 
+                    holder.deleteNotesList.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            onClickListener.onDelete(holder.getAdapterPosition());
+                        }
+                    });
+                    Glide.with(context).load(expenseModel.getImageUri()).into(holder.imgList);
                     holder.listCardView.setCardBackgroundColor(expenseModel.getColor());
 
                 } else if (type.equals("2")) {
@@ -108,11 +118,13 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 
     public interface OnClickListener {
         void onClick(int position, ExpenseModel model);
+        void  onDelete(int position);
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
 
         private TextView title, description,date ;
+        ImageView imgList,deleteNotesList;
         CardView listCardView;
         MaterialCardView gridCardView,staggeredCardView;
         public ViewHolder(View itemView) {
@@ -124,6 +136,8 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
             gridCardView = itemView.findViewById(R.id.gridCard);
             staggeredCardView=itemView.findViewById(R.id.staggeredCard);
             date=itemView.findViewById(R.id.createDate);
+            imgList=itemView.findViewById(R.id.imgList);
+            deleteNotesList=itemView.findViewById(R.id.deleteNotesList);
         }
     }
 }

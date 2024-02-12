@@ -2,13 +2,17 @@ package com.example.notesapp_task;
 
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
+import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.Toast;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.bumptech.glide.Glide;
 import com.example.notesapp_task.ModelClass.ExpenseModel;
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 import com.google.android.material.textfield.TextInputEditText;
@@ -28,10 +32,14 @@ public class Add_NotesActivity extends AppCompatActivity implements View.OnClick
     ExtendedFloatingActionButton btnSave;
     ExpenseModel expenseModel;
     View picColorButton;
+    ImageButton uploadImage;
+    ImageView showImage;
     Context context;
     Date date;
     private String currentDate;
-    int mDefaultColor;
+    int  mDefaultColor;
+    int SELECT_PICTURE = 200;
+    String imageUri;
 
 
     @Override
@@ -51,10 +59,21 @@ public class Add_NotesActivity extends AppCompatActivity implements View.OnClick
 
         if (getIntent().hasExtra(MainActivity.NEXT_SCREEN)) {
             expenseModel = (ExpenseModel) getIntent().getSerializableExtra(MainActivity.NEXT_SCREEN);
+
         }
         if (expenseModel != null) {
             etTitle.setText(expenseModel.getTitleNotes());
             etDescription.setText(expenseModel.getDescriptionNotes());
+
+            if (expenseModel.getImageUri() != null)
+            {
+
+                Uri myUri = Uri.parse(expenseModel.getImageUri());
+                imageUri=myUri.toString();
+                Glide.with(this).load(myUri).into(showImage);
+
+            }
+
         }
     }
 
@@ -63,6 +82,8 @@ public class Add_NotesActivity extends AppCompatActivity implements View.OnClick
         etDescription = findViewById(R.id.etDescription);
         btnSave = findViewById(R.id.btnSaveNotes);
         picColorButton=findViewById(R.id.pick_color_button);
+        uploadImage=findViewById(R.id.uploadImage);
+        showImage=findViewById(R.id.showImage);
 
 
         context=Add_NotesActivity.this;
@@ -74,6 +95,7 @@ public class Add_NotesActivity extends AppCompatActivity implements View.OnClick
 
         btnSave.setOnClickListener(this);
         picColorButton.setOnClickListener(this);
+        uploadImage.setOnClickListener(this);
 
 
         getDate();
@@ -85,7 +107,7 @@ public class Add_NotesActivity extends AppCompatActivity implements View.OnClick
         SimpleDateFormat df=new SimpleDateFormat("dd-MMM-yyyy hh:mm:ss", Locale.getDefault());
         currentDate=df.format(date);
 
-        Log.d("currentDate", "initViews: "+currentDate);
+//        Log.d("currentDate", "initViews: "+currentDate);
 
 
     }
@@ -104,12 +126,18 @@ public class Add_NotesActivity extends AppCompatActivity implements View.OnClick
         {
             int position = getIntent().getIntExtra("position",-1);
 
+
+
+
             Intent i = new Intent();
             i.putExtra("position", position);
             i.putExtra("title", addTitle);
             i.putExtra("description", addDescription);
             i.putExtra("date",currentDate);
             i.putExtra("color",mDefaultColor);
+            i.putExtra("imageUri",imageUri);
+
+
             setResult(RESULT_OK, i);
             finish();
 
@@ -133,6 +161,15 @@ public class Add_NotesActivity extends AppCompatActivity implements View.OnClick
             case R.id.pick_color_button:
             {
                 openColorPickerDialogue();
+                break;
+            }
+            case R.id.uploadImage:
+            {
+                Intent photoPickerIntent = new Intent();
+                photoPickerIntent.setType("image/*");
+                photoPickerIntent.setAction(Intent.ACTION_GET_CONTENT);
+                startActivityForResult(Intent.createChooser(photoPickerIntent, "Select Picture"), SELECT_PICTURE);
+                break;
             }
         }
     }
@@ -156,5 +193,25 @@ public class Add_NotesActivity extends AppCompatActivity implements View.OnClick
                     }
                 });
         colorPickerDialogue.show();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (resultCode==RESULT_OK)
+        {
+            if (requestCode==SELECT_PICTURE)
+            {
+                Uri selectedImageUri=data.getData();
+
+                if (selectedImageUri != null)
+                {
+                    imageUri=selectedImageUri.toString();
+                    showImage.setImageURI(selectedImageUri);
+
+                }
+            }
+        }
     }
 }

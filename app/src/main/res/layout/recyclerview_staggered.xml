@@ -36,5 +36,14 @@
         android:textStyle="bold"
 
         />
+    <TextView
+        android:id="@+id/createDate"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:maxLines="1"
+        android:textSize="12sp"
+        android:text="date"
+        android:textAlignment="center"
+        android:textColor="@color/white"/>
 
 </LinearLayout>

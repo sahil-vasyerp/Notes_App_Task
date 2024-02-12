@@ -9,7 +9,9 @@ import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
@@ -18,7 +20,6 @@ import com.example.notesapp_task.Adapter.RecyclerViewAdapter;
 import com.example.notesapp_task.ModelClass.ExpenseModel;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
-import com.google.android.material.search.SearchBar;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -29,17 +30,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     ExtendedFloatingActionButton btnAddNotes;
     RecyclerView recyclerView;
     RecyclerViewAdapter adapter;
-    SearchBar searchBar;
     int position;
     MaterialToolbar toolbar;
     ArrayList<ExpenseModel> arrayList = new ArrayList<>();
-    ExpenseModel expenseModel;
     public static final String NEXT_SCREEN = "details_screen";
     private boolean ascendingClickedTitle = false;
     private boolean descendingClickedTitle = false;
     private boolean ascendingClickedDate = false;
     private boolean descendingClickedDate = false;
-
 
 
     @Override
@@ -52,6 +50,25 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
+    ItemTouchHelper.SimpleCallback simpleCallback = new ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP | ItemTouchHelper.DOWN |ItemTouchHelper.START|ItemTouchHelper.END, 0) {
+
+        @Override
+        public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
+
+            int fromPosition = viewHolder.getAdapterPosition();
+            int toPosition = target.getAdapterPosition();
+            Collections.swap(arrayList, fromPosition, toPosition);
+            recyclerView.getAdapter().notifyItemMoved(fromPosition, toPosition);
+            return false;
+        }
+
+        @Override
+        public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+
+        }
+    };
+
+
     private void initViews() {
 
 
@@ -60,18 +77,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         toolbar = findViewById(R.id.toolBar);
 
 
-
 //  ----------------------------toolbar-------------------------------------------------------------
 
         setSupportActionBar(toolbar);
 
 //-------------------------RecyclerView Adapter-----------------------------------------------------
 
-        adapter = new RecyclerViewAdapter(arrayList, "1", this,MainActivity.this);
+        adapter = new RecyclerViewAdapter(arrayList, "1", this, MainActivity.this);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(adapter);
 
+        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(this, DividerItemDecoration.VERTICAL);
+        recyclerView.addItemDecoration(dividerItemDecoration);
 
+        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(simpleCallback);
+        itemTouchHelper.attachToRecyclerView(recyclerView);
 
 //  ----------------------ClickListener-------------------------------------------------------------
 
@@ -117,36 +137,30 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             String addTitle = data.getStringExtra("title");
             String addDescription = data.getStringExtra("description");
             String currentDate = data.getStringExtra("date");
+            String imageUri = data.getStringExtra("imageUri");
+            int color = data.getIntExtra("color", 0);
 
-            int color=data.getIntExtra("color",0);
 
+            if (requestCode == RESULT_FIRST_USER) {
 
-            if (requestCode == RESULT_FIRST_USER)
-            {
-
-                arrayList.add(new ExpenseModel(addTitle, addDescription,color,currentDate));
+                arrayList.add(new ExpenseModel(addTitle, addDescription, color, currentDate, imageUri));
                 adapter.notifyDataSetChanged();
 
-                if (ascendingClickedTitle){
+                if (ascendingClickedTitle) {
                     ascendingOrder();
-                }
-                else if (descendingClickedTitle){
+                } else if (descendingClickedTitle) {
 
                     descendingOrder();
-                }
-                else if (ascendingClickedDate)
-                {
+                } else if (ascendingClickedDate) {
                     ascendingOrderByDate();
-                }
-                else if (descendingClickedDate)
-                {
+                } else if (descendingClickedDate) {
                     descendingOrderByDate();
 
                 }
 
 
             } else {
-                arrayList.set(positionUpdate, new ExpenseModel(addTitle, addDescription,color,currentDate));
+                arrayList.set(positionUpdate, new ExpenseModel(addTitle, addDescription, color, currentDate, imageUri));
                 adapter.notifyItemChanged(position);
 
             }
@@ -187,35 +201,31 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 return true;
 
             }
-            case R.id.ascendingList:
-            {
+            case R.id.ascendingList: {
 
-                ascendingClickedTitle=true;
-                descendingClickedTitle=false;
+                ascendingClickedTitle = true;
+                descendingClickedTitle = false;
                 ascendingOrder();
 
                 return true;
             }
-            case R.id.descendingList:
-            {
+            case R.id.descendingList: {
 
-                ascendingClickedTitle=false;
-                descendingClickedTitle=true;
+                ascendingClickedTitle = false;
+                descendingClickedTitle = true;
                 descendingOrder();
 
                 return true;
             }
-            case R.id.ascendingDate:
-            {
+            case R.id.ascendingDate: {
                 ascendingClickedDate = true;
                 descendingClickedDate = false;
                 ascendingOrderByDate();
 
                 return true;
             }
-            case R.id.descendingDate:
-            {
-                ascendingClickedDate =  false;
+            case R.id.descendingDate: {
+                ascendingClickedDate = false;
                 descendingClickedDate = true;
                 descendingOrderByDate();
             }
@@ -224,8 +234,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         return (super.onOptionsItemSelected(item));
     }
 
-    private void descendingOrderByDate()
-    {
+    private void descendingOrderByDate() {
         Collections.sort(arrayList, new Comparator<ExpenseModel>() {
             @Override
             public int compare(ExpenseModel o1, ExpenseModel o2) {
@@ -236,8 +245,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
-    private void ascendingOrderByDate()
-    {
+    private void ascendingOrderByDate() {
         Collections.sort(arrayList, new Comparator<ExpenseModel>() {
             @Override
             public int compare(ExpenseModel o1, ExpenseModel o2) {
@@ -249,8 +257,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
-    private void ascendingOrder()
-    {
+    private void ascendingOrder() {
         Collections.sort(arrayList, new Comparator<ExpenseModel>() {
             @Override
             public int compare(ExpenseModel o1, ExpenseModel o2) {
@@ -263,8 +270,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
-    private void descendingOrder()
-    {
+    private void descendingOrder() {
         Collections.sort(arrayList, new Comparator<ExpenseModel>() {
             @Override
             public int compare(ExpenseModel o1, ExpenseModel o2) {
@@ -284,5 +290,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         this.position = position;
 
+    }
+
+    @Override
+    public void onDelete(int position) {
+
+//        Log.d("delete", "onDelete: "+position);
+
+        arrayList.remove(position);
+        adapter.notifyItemRemoved(position);
     }
 }
