@@ -1,9 +1,11 @@
 package com.example.notesapp_task;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -13,6 +15,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.bumptech.glide.Glide;
+import com.example.notesapp_task.DataBase.DBHandler;
 import com.example.notesapp_task.ModelClass.ExpenseModel;
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 import com.google.android.material.textfield.TextInputEditText;
@@ -37,9 +40,10 @@ public class Add_NotesActivity extends AppCompatActivity implements View.OnClick
     Context context;
     Date date;
     private String currentDate;
-    int  mDefaultColor;
+    int mDefaultColor;
     int SELECT_PICTURE = 200;
     String imageUri;
+    DBHandler dbHandler;
 
 
     @Override
@@ -58,18 +62,19 @@ public class Add_NotesActivity extends AppCompatActivity implements View.OnClick
 
 
         if (getIntent().hasExtra(MainActivity.NEXT_SCREEN)) {
+
             expenseModel = (ExpenseModel) getIntent().getSerializableExtra(MainActivity.NEXT_SCREEN);
 
         }
         if (expenseModel != null) {
             etTitle.setText(expenseModel.getTitleNotes());
             etDescription.setText(expenseModel.getDescriptionNotes());
+            mDefaultColor= expenseModel.getColor();
 
-            if (expenseModel.getImageUri() != null)
-            {
+            if (expenseModel.getImageUri() != null) {
 
                 Uri myUri = Uri.parse(expenseModel.getImageUri());
-                imageUri=myUri.toString();
+                imageUri = myUri.toString();
                 Glide.with(this).load(myUri).into(showImage);
 
             }
@@ -81,16 +86,14 @@ public class Add_NotesActivity extends AppCompatActivity implements View.OnClick
         etTitle = findViewById(R.id.etTitle);
         etDescription = findViewById(R.id.etDescription);
         btnSave = findViewById(R.id.btnSaveNotes);
-        picColorButton=findViewById(R.id.pick_color_button);
-        uploadImage=findViewById(R.id.uploadImage);
-        showImage=findViewById(R.id.showImage);
+        picColorButton = findViewById(R.id.pick_color_button);
+        uploadImage = findViewById(R.id.uploadImage);
+        showImage = findViewById(R.id.showImage);
 
 
-        context=Add_NotesActivity.this;
-        mDefaultColor =context.getColor(R.color.list_zero);
-
-
-
+        context = Add_NotesActivity.this;
+        dbHandler = new DBHandler(Add_NotesActivity.this);
+        mDefaultColor = context.getColor(R.color.list_zero);
 
 
         btnSave.setOnClickListener(this);
@@ -103,9 +106,9 @@ public class Add_NotesActivity extends AppCompatActivity implements View.OnClick
     }
 
     private void getDate() {
-        date= Calendar.getInstance().getTime();
-        SimpleDateFormat df=new SimpleDateFormat("dd-MMM-yyyy hh:mm:ss", Locale.getDefault());
-        currentDate=df.format(date);
+        date = Calendar.getInstance().getTime();
+        SimpleDateFormat df = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss", Locale.getDefault());
+        currentDate = df.format(date);
 
 //        Log.d("currentDate", "initViews: "+currentDate);
 
@@ -118,24 +121,33 @@ public class Add_NotesActivity extends AppCompatActivity implements View.OnClick
         String addDescription = etDescription.getText().toString().trim();
 
 
-        if (addTitle.isEmpty() && addDescription.isEmpty())
-        {
-            Toast.makeText(this,"No value ",Toast.LENGTH_SHORT).show();
-        }
-        else
-        {
-            int position = getIntent().getIntExtra("position",-1);
+        if (addTitle.isEmpty() && addDescription.isEmpty()) {
+            Toast.makeText(this, "No value ", Toast.LENGTH_SHORT).show();
+        } else {
+
+            int position = getIntent().getIntExtra("position", -1);
+            String clickPosition = String.valueOf(position);
 
 
+            Log.d("positionCheckAddd123", "addArraylist: " + clickPosition);
+
+
+            if (position == -1) {
+                dbHandler.addNewNotes(addTitle, addDescription, mDefaultColor, imageUri, currentDate);
+            } else {
+                dbHandler.updateNotes(clickPosition, addTitle, addDescription, mDefaultColor, imageUri, currentDate);
+
+
+            }
 
 
             Intent i = new Intent();
             i.putExtra("position", position);
             i.putExtra("title", addTitle);
             i.putExtra("description", addDescription);
-            i.putExtra("date",currentDate);
-            i.putExtra("color",mDefaultColor);
-            i.putExtra("imageUri",imageUri);
+            i.putExtra("date", currentDate);
+            i.putExtra("color", mDefaultColor);
+            i.putExtra("imageUri", imageUri);
 
 
             setResult(RESULT_OK, i);
@@ -144,27 +156,23 @@ public class Add_NotesActivity extends AppCompatActivity implements View.OnClick
         }
 
 
-
     }
 
+    @SuppressLint("NonConstantResourceId")
     @Override
     public void onClick(View v) {
 
 
-        switch (v.getId())
-        {
-            case R.id.btnSaveNotes:
-            {
+        switch (v.getId()) {
+            case R.id.btnSaveNotes: {
                 addArraylist();
                 break;
             }
-            case R.id.pick_color_button:
-            {
+            case R.id.pick_color_button: {
                 openColorPickerDialogue();
                 break;
             }
-            case R.id.uploadImage:
-            {
+            case R.id.uploadImage: {
                 Intent photoPickerIntent = new Intent();
                 photoPickerIntent.setType("image/*");
                 photoPickerIntent.setAction(Intent.ACTION_GET_CONTENT);
@@ -174,8 +182,7 @@ public class Add_NotesActivity extends AppCompatActivity implements View.OnClick
         }
     }
 
-    private void openColorPickerDialogue()
-    {
+    private void openColorPickerDialogue() {
         final AmbilWarnaDialog colorPickerDialogue = new AmbilWarnaDialog(this, mDefaultColor,
                 new AmbilWarnaDialog.OnAmbilWarnaListener() {
                     @Override
@@ -199,15 +206,12 @@ public class Add_NotesActivity extends AppCompatActivity implements View.OnClick
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (resultCode==RESULT_OK)
-        {
-            if (requestCode==SELECT_PICTURE)
-            {
-                Uri selectedImageUri=data.getData();
+        if (resultCode == RESULT_OK) {
+            if (requestCode == SELECT_PICTURE) {
+                Uri selectedImageUri = data.getData();
 
-                if (selectedImageUri != null)
-                {
-                    imageUri=selectedImageUri.toString();
+                if (selectedImageUri != null) {
+                    imageUri = selectedImageUri.toString();
                     showImage.setImageURI(selectedImageUri);
 
                 }

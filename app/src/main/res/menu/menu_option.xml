@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <item android:title="sort">
+    <item android:title="Sort" >
         <menu>
-            <item android:title="sort by Alphabetical">
+            <item android:title="Sort By Alphabetical">
 
                 <menu>
                     <item android:id="@+id/ascendingList" android:title="Ascending"/>
@@ -11,7 +11,7 @@
                 </menu>
 
             </item>
-            <item android:title="sort by date">
+            <item android:title="Sort By Date">
                 <menu>
                     <item android:id="@+id/ascendingDate" android:title="Ascending"/>
                     <item android:id="@+id/descendingDate" android:title="Descending"/>
@@ -20,9 +20,9 @@
 
         </menu>
     </item>
-        <item android:title="view">
+        <item android:title="View">
             <menu>
-                <item android:id="@+id/listViewLayout" android:title="list View"/>
+                <item android:id="@+id/listViewLayout" android:title="List View" />
                 <item android:id="@+id/gridViewLayout" android:title="Grid View"/>
                 <item android:id="@+id/staggeredLayout" android:title="Staggered View"/>
             </menu>

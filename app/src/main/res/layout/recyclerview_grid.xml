@@ -20,31 +20,65 @@
             android:layout_height="wrap_content"
             android:maxLines="5"
             android:padding="10dp"
-            android:text="text simple"
+            android:text="Description"
             android:textColor="@color/black"
             />
 
 
     </com.google.android.material.card.MaterialCardView>
 
-    <TextView
-        android:id="@+id/tvTitleRead"
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:maxLength="15"
-        android:text="Title"
-        android:textColor="@color/white"
-        android:textAlignment="center"
-        android:textSize="20sp"
-        android:textStyle="bold" />
-    <TextView
-        android:id="@+id/createDate"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:maxLines="1"
-        android:textSize="12sp"
-        android:text="date"
-        android:textAlignment="center"
-        android:textColor="@color/white"/>
+        android:orientation="horizontal"
+        >
+
+        <TextView
+            android:id="@+id/tvTitleRead"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:maxLength="15"
+            android:text="Title"
+            android:paddingHorizontal="3dp"
+            android:textColor="@color/white"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/deleteNotesList"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ImageView
+            android:id="@+id/deleteNotesList"
+            android:layout_width="31dp"
+            android:layout_height="0dp"
+            android:src="@drawable/baseline_deletegrid_outline_24"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:layout_marginTop="15dp"
+            android:paddingVertical="5dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/createDate"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="27dp"
+            android:maxLines="1"
+            android:text="date"
+            android:paddingHorizontal="3dp"
+            android:textColor="@color/white"
+            android:textSize="12sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="@+id/tvTitleRead"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/tvTitleRead" />
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+
+
 
 </LinearLayout>

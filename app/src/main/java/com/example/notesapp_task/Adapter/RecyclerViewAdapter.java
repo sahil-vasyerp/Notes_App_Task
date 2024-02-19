@@ -17,7 +17,11 @@ import com.example.notesapp_task.ModelClass.ExpenseModel;
 import com.example.notesapp_task.R;
 import com.google.android.material.card.MaterialCardView;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.ViewHolder> {
 
@@ -28,7 +32,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 
     public RecyclerViewAdapter(ArrayList<ExpenseModel> arrayList, String type, OnClickListener onClickListener, Context context) {
 
-        this.arrayList = arrayList;
+        this.arrayList   = arrayList;
         this.type = type;
         this.onClickListener = onClickListener;
         this.context = context;
@@ -62,42 +66,81 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
         }
     }
 
-    @SuppressLint("ResourceAsColor")
+    @SuppressLint({"ResourceAsColor", "SetTextI18n"})
     @Override
-    public void onBindViewHolder(@NonNull RecyclerViewAdapter.ViewHolder holder,  int position) {
+    public void onBindViewHolder(@NonNull RecyclerViewAdapter.ViewHolder holder, int position) {
 
 
         ExpenseModel expenseModel = arrayList.get(position);
 
         holder.title.setText(expenseModel.getTitleNotes());
         holder.description.setText(expenseModel.getDescriptionNotes());
-        holder.date.setText(expenseModel.getCreateDate());
+
+
+
+//------------------------------time to time ago set------------------------------------------------
+        try {
+            @SuppressLint("SimpleDateFormat")
+            SimpleDateFormat format=new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
+            Date past = format.parse(expenseModel.getCreateDate());
+            Date now=new Date();
+
+            long seconds= TimeUnit.MILLISECONDS.toSeconds(now.getTime() - past.getTime());
+            long minutes=TimeUnit.MILLISECONDS.toMinutes(now.getTime() - past.getTime());
+            long hours=TimeUnit.MILLISECONDS.toHours(now.getTime() - past.getTime());
+            long days=TimeUnit.MILLISECONDS.toDays(now.getTime() - past.getTime());
+
+
+            if (seconds<60)
+            {
+                holder.date.setText(seconds+" second ago");
+            } else if (minutes<60)
+            {
+                holder.date.setText(minutes+" minutes ago");
+            } else if (hours<24)
+            {
+                holder.date.setText(hours+" hours ago");
+            } else
+            {
+                holder.date.setText(days+" days ago");
+                
+            }
+
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
 
 
 
 //        int a= position%4;
 
 
-                if (type.equals("1")) {
+        if (type.equals("1")) {
 
-                    holder.deleteNotesList.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            onClickListener.onDelete(holder.getAdapterPosition());
-                        }
-                    });
-                    Glide.with(context).load(expenseModel.getImageUri()).into(holder.imgList);
-                    holder.listCardView.setCardBackgroundColor(expenseModel.getColor());
-
-                } else if (type.equals("2")) {
-
-                    holder.gridCardView.setCardBackgroundColor(expenseModel.getColor());
-
-                } else if (type.equals("3")) {
-
-                    holder.staggeredCardView.setCardBackgroundColor(expenseModel.getColor());
-
+            holder.deleteNotesList.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    onClickListener.onDelete(holder.getAdapterPosition());
                 }
+            });
+            Glide.with(context).load(expenseModel.getImageUri()).into(holder.imgList);
+            holder.listCardView.setCardBackgroundColor(expenseModel.getColor());
+
+        } else if (type.equals("2")) {
+            holder.deleteNotesList.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    onClickListener.onDelete(holder.getAdapterPosition());
+                }
+            });
+
+            holder.gridCardView.setCardBackgroundColor(expenseModel.getColor());
+
+        } else if (type.equals("3")) {
+
+            holder.staggeredCardView.setCardBackgroundColor(expenseModel.getColor());
+
+        }
 
 
         holder.itemView.setOnClickListener(new View.OnClickListener() {
@@ -118,15 +161,17 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 
     public interface OnClickListener {
         void onClick(int position, ExpenseModel model);
-        void  onDelete(int position);
+
+        void onDelete(int position);
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
 
-        private TextView title, description,date ;
-        ImageView imgList,deleteNotesList;
+        private TextView title, description, date;
+        ImageView imgList, deleteNotesList;
         CardView listCardView;
-        MaterialCardView gridCardView,staggeredCardView;
+        MaterialCardView gridCardView, staggeredCardView;
+
         public ViewHolder(View itemView) {
             super(itemView);
 
@@ -134,10 +179,10 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
             description = itemView.findViewById(R.id.tvDescriptionRead);
             listCardView = itemView.findViewById(R.id.listCard);
             gridCardView = itemView.findViewById(R.id.gridCard);
-            staggeredCardView=itemView.findViewById(R.id.staggeredCard);
-            date=itemView.findViewById(R.id.createDate);
-            imgList=itemView.findViewById(R.id.imgList);
-            deleteNotesList=itemView.findViewById(R.id.deleteNotesList);
+            staggeredCardView = itemView.findViewById(R.id.staggeredCard);
+            date = itemView.findViewById(R.id.createDate);
+            imgList = itemView.findViewById(R.id.imgList);
+            deleteNotesList = itemView.findViewById(R.id.deleteNotesList);
         }
     }
 }

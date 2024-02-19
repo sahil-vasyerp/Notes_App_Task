@@ -1,6 +1,13 @@
 package com.example.notesapp_task;
 
+import static android.content.DialogInterface.BUTTON_NEGATIVE;
+import static android.content.DialogInterface.BUTTON_POSITIVE;
+
+import android.annotation.SuppressLint;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -8,7 +15,10 @@ import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
+import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.ItemTouchHelper;
@@ -17,6 +27,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
 import com.example.notesapp_task.Adapter.RecyclerViewAdapter;
+import com.example.notesapp_task.DataBase.DBHandler;
 import com.example.notesapp_task.ModelClass.ExpenseModel;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
@@ -31,13 +42,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     RecyclerView recyclerView;
     RecyclerViewAdapter adapter;
     int position;
+    int positionUpdate;
     MaterialToolbar toolbar;
     ArrayList<ExpenseModel> arrayList = new ArrayList<>();
+    ExpenseModel expenseModel;
     public static final String NEXT_SCREEN = "details_screen";
     private boolean ascendingClickedTitle = false;
     private boolean descendingClickedTitle = false;
     private boolean ascendingClickedDate = false;
     private boolean descendingClickedDate = false;
+    DialogInterface.OnClickListener dialogClickListener;
+    DrawerLayout drawerLayout;
+    DBHandler dbHandler;
 
 
     @Override
@@ -45,12 +61,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+
 
         initViews();
 
+
+        readArrayListDB();
+
     }
 
-    ItemTouchHelper.SimpleCallback simpleCallback = new ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP | ItemTouchHelper.DOWN |ItemTouchHelper.START|ItemTouchHelper.END, 0) {
+    ItemTouchHelper.SimpleCallback simpleCallback = new ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP | ItemTouchHelper.DOWN | ItemTouchHelper.START | ItemTouchHelper.END, 0) {
 
         @Override
         public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
@@ -77,6 +98,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         toolbar = findViewById(R.id.toolBar);
 
 
+//  ----------------------------Database-------------------------------------------------------------
+        dbHandler = new DBHandler(MainActivity.this);
 //  ----------------------------toolbar-------------------------------------------------------------
 
         setSupportActionBar(toolbar);
@@ -99,20 +122,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         toolbar.setOnClickListener(this);
 
 
-//        addArrayList();
     }
 
-    private void addArrayList() {
-
-//        arrayList.add(new ExpenseModel("sahil", "Hello, I am Sahil Mahyavanshi, pursuing computer engineering(4th year) at aditya silver oak institute of technology from ahmedabad.\n" +
-//                "▫️ I am always ready to have new experiences, meet new people and learn new things.\n" +
-//                "▫️ I enjoy solving technical problems, researching and developing new technologies. I enjoy to meeting people and working with them in a team environment. I also enjoy interacting with clients and customers.\n" +
-//                "▫️ I am a quick learner with a fun, outgoing personality.\n" +
-//                "▫️ In addition, I excel in my ability to work under pressure and handle stressful situations very well.These skills that I have will be a benefit for any IT company."));
-//        arrayList.add(new ExpenseModel("shubham", "hello my name is suhbham"));
-//        arrayList.add(new ExpenseModel("abhishek", "hello my name is abhishek.\n I am a Software Developer."));
-//        arrayList.add(new ExpenseModel("devbhai", "hello my name is dev.\n I am a android Developer."));
-    }
 
     @Override
     public void onClick(View v) {
@@ -143,8 +154,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             if (requestCode == RESULT_FIRST_USER) {
 
-                arrayList.add(new ExpenseModel(addTitle, addDescription, color, currentDate, imageUri));
-                adapter.notifyDataSetChanged();
+
+                readArrayListDB();
+
+
+//                arrayList.add(new ExpenseModel(addTitle, addDescription, color, currentDate, imageUri));
+//                adapter.notifyDataSetChanged();
 
                 if (ascendingClickedTitle) {
                     ascendingOrder();
@@ -160,11 +175,50 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
             } else {
-                arrayList.set(positionUpdate, new ExpenseModel(addTitle, addDescription, color, currentDate, imageUri));
-                adapter.notifyItemChanged(position);
+                updateArrayListDB();
+
+//                arrayList.set(positionUpdate, new ExpenseModel( addTitle, addDescription, color, currentDate, imageUri));
+//                adapter.notifyItemChanged(position);
 
             }
         }
+    }
+
+    private void updateArrayListDB() {
+//        int positionUpdate = getIntent().getIntExtra("position", -1);
+
+        SQLiteDatabase db = dbHandler.getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT * FROM myNotes", null);
+//        Log.d("watch1", "updateArrayListDB: " + positionUpdate);
+//        Log.d("watch2", "updateArrayListDB: " + position);
+
+        if (cursor.moveToPosition(position)) {
+
+            expenseModel = new ExpenseModel(cursor.getInt(0), cursor.getString(1), cursor.getString(2), cursor.getInt(3), cursor.getString(4), cursor.getString(5));
+            arrayList.set(position, expenseModel);
+            adapter.notifyItemChanged(position);
+
+        }
+
+        cursor.close();
+    }
+
+    @SuppressLint("NotifyDataSetChanged")
+    private void readArrayListDB() {
+        arrayList.clear();
+        SQLiteDatabase db = dbHandler.getReadableDatabase();
+
+
+        Cursor cursor = db.rawQuery("SELECT * FROM myNotes", null);
+
+
+        while (cursor.moveToNext()) {
+            expenseModel = new ExpenseModel(cursor.getInt(0), cursor.getString(1), cursor.getString(2), cursor.getInt(3), cursor.getString(4), cursor.getString(5));
+            arrayList.add(expenseModel);
+            adapter.notifyDataSetChanged();
+
+        }
+        cursor.close();
     }
 
 
@@ -173,6 +227,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         return true;
     }
 
+    @SuppressLint("NonConstantResourceId")
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
 
@@ -234,6 +289,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         return (super.onOptionsItemSelected(item));
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     private void descendingOrderByDate() {
         Collections.sort(arrayList, new Comparator<ExpenseModel>() {
             @Override
@@ -245,6 +301,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     private void ascendingOrderByDate() {
         Collections.sort(arrayList, new Comparator<ExpenseModel>() {
             @Override
@@ -270,6 +327,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     private void descendingOrder() {
         Collections.sort(arrayList, new Comparator<ExpenseModel>() {
             @Override
@@ -285,10 +343,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(int position, ExpenseModel model) {
         Intent intent = new Intent(MainActivity.this, Add_NotesActivity.class);
         intent.putExtra(NEXT_SCREEN, model);
-        intent.putExtra("position", position);
+
+        intent.putExtra("position", model.getId());
         startActivityForResult(intent, 2);
 
         this.position = position;
+        this.positionUpdate= model.getId();
 
     }
 
@@ -297,7 +357,36 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 //        Log.d("delete", "onDelete: "+position);
 
-        arrayList.remove(position);
-        adapter.notifyItemRemoved(position);
+        dialogClickListener = new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+
+                switch (which) {
+                    case BUTTON_POSITIVE:
+                    {
+
+                        String positionDelete= String.valueOf(arrayList.get(position).getId());
+                        dbHandler.deleteNotes(positionDelete);
+                        arrayList.remove(position);
+                        adapter.notifyItemRemoved(position);
+                        break;
+                    }
+
+                    case BUTTON_NEGATIVE: {
+                        dialog.dismiss();
+                        break;
+                    }
+                    default:
+                        throw new IllegalStateException("Unexpected value: " + which);
+
+                }
+
+
+            }
+        };
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("Are you sure ?").setPositiveButton("Delete", dialogClickListener).setNegativeButton("Cancel", dialogClickListener).show();
+
+
     }
 }
