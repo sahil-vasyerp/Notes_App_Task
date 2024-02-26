@@ -6,8 +6,6 @@ import static android.content.DialogInterface.BUTTON_POSITIVE;
 import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -17,9 +15,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.app.AppCompatDelegate;
-import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -27,14 +24,15 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
 import com.example.notesapp_task.Adapter.RecyclerViewAdapter;
-import com.example.notesapp_task.DataBase.DBHandler;
 import com.example.notesapp_task.ModelClass.ExpenseModel;
+import com.example.notesapp_task.viewmodel.NotesViewModel;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener, RecyclerViewAdapter.OnClickListener {
 
@@ -44,16 +42,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     int position;
     int positionUpdate;
     MaterialToolbar toolbar;
-    ArrayList<ExpenseModel> arrayList = new ArrayList<>();
-    ExpenseModel expenseModel;
+
+    List<ExpenseModel> arrayList = new ArrayList<>();
     public static final String NEXT_SCREEN = "details_screen";
     private boolean ascendingClickedTitle = false;
     private boolean descendingClickedTitle = false;
     private boolean ascendingClickedDate = false;
     private boolean descendingClickedDate = false;
     DialogInterface.OnClickListener dialogClickListener;
-    DrawerLayout drawerLayout;
-    DBHandler dbHandler;
+    private NotesViewModel notesViewModel;
 
 
     @Override
@@ -61,12 +58,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
-
 
         initViews();
-
-
         readArrayListDB();
 
     }
@@ -78,6 +71,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             int fromPosition = viewHolder.getAdapterPosition();
             int toPosition = target.getAdapterPosition();
+
             Collections.swap(arrayList, fromPosition, toPosition);
             recyclerView.getAdapter().notifyItemMoved(fromPosition, toPosition);
             return false;
@@ -96,10 +90,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         btnAddNotes = findViewById(R.id.btnAddNotes);
         recyclerView = findViewById(R.id.rvNotes);
         toolbar = findViewById(R.id.toolBar);
+        notesViewModel = ViewModelProviders.of(this).get(NotesViewModel.class);
 
 
-//  ----------------------------Database-------------------------------------------------------------
-        dbHandler = new DBHandler(MainActivity.this);
 //  ----------------------------toolbar-------------------------------------------------------------
 
         setSupportActionBar(toolbar);
@@ -110,16 +103,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(adapter);
 
-        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(this, DividerItemDecoration.VERTICAL);
-        recyclerView.addItemDecoration(dividerItemDecoration);
 
+//-------------------------Drag & Drop--------------------------------------------------------------
         ItemTouchHelper itemTouchHelper = new ItemTouchHelper(simpleCallback);
         itemTouchHelper.attachToRecyclerView(recyclerView);
 
 //  ----------------------ClickListener-------------------------------------------------------------
 
         btnAddNotes.setOnClickListener(this);
-        toolbar.setOnClickListener(this);
 
 
     }
@@ -144,81 +135,41 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         if (resultCode == RESULT_OK) {
 
-            int positionUpdate = data.getIntExtra("position", -1);
-            String addTitle = data.getStringExtra("title");
-            String addDescription = data.getStringExtra("description");
-            String currentDate = data.getStringExtra("date");
-            String imageUri = data.getStringExtra("imageUri");
-            int color = data.getIntExtra("color", 0);
-
-
             if (requestCode == RESULT_FIRST_USER) {
-
 
                 readArrayListDB();
 
 
-//                arrayList.add(new ExpenseModel(addTitle, addDescription, color, currentDate, imageUri));
-//                adapter.notifyDataSetChanged();
-
-                if (ascendingClickedTitle) {
-                    ascendingOrder();
-                } else if (descendingClickedTitle) {
-
-                    descendingOrder();
-                } else if (ascendingClickedDate) {
-                    ascendingOrderByDate();
-                } else if (descendingClickedDate) {
-                    descendingOrderByDate();
-
-                }
-
-
             } else {
-                updateArrayListDB();
 
-//                arrayList.set(positionUpdate, new ExpenseModel( addTitle, addDescription, color, currentDate, imageUri));
-//                adapter.notifyItemChanged(position);
+                readArrayListDB();
 
             }
         }
     }
 
-    private void updateArrayListDB() {
-//        int positionUpdate = getIntent().getIntExtra("position", -1);
-
-        SQLiteDatabase db = dbHandler.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT * FROM myNotes", null);
-//        Log.d("watch1", "updateArrayListDB: " + positionUpdate);
-//        Log.d("watch2", "updateArrayListDB: " + position);
-
-        if (cursor.moveToPosition(position)) {
-
-            expenseModel = new ExpenseModel(cursor.getInt(0), cursor.getString(1), cursor.getString(2), cursor.getInt(3), cursor.getString(4), cursor.getString(5));
-            arrayList.set(position, expenseModel);
-            adapter.notifyItemChanged(position);
-
-        }
-
-        cursor.close();
-    }
 
     @SuppressLint("NotifyDataSetChanged")
     private void readArrayListDB() {
-        arrayList.clear();
-        SQLiteDatabase db = dbHandler.getReadableDatabase();
 
+        notesViewModel.getAllNotes().observe(this, new Observer<List<ExpenseModel>>() {
+            @Override
+            public void onChanged(List<ExpenseModel> expenseModels) {
+                adapter.setNotes(expenseModels);
+                arrayList = expenseModels;
 
-        Cursor cursor = db.rawQuery("SELECT * FROM myNotes", null);
+                if (ascendingClickedTitle) {
+                    ascendingOrder();
+                } else if (descendingClickedTitle) {
+                    descendingOrder();
+                } else if (ascendingClickedDate) {
+                    ascendingOrderByDate();
+                } else if (descendingClickedDate) {
+                    descendingOrderByDate();
+                }
 
-
-        while (cursor.moveToNext()) {
-            expenseModel = new ExpenseModel(cursor.getInt(0), cursor.getString(1), cursor.getString(2), cursor.getInt(3), cursor.getString(4), cursor.getString(5));
-            arrayList.add(expenseModel);
-            adapter.notifyDataSetChanged();
-
-        }
-        cursor.close();
+            }
+        });
     }
 
 
@@ -260,6 +211,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                 ascendingClickedTitle = true;
                 descendingClickedTitle = false;
+                ascendingClickedDate = false;
+                descendingClickedDate = false;
                 ascendingOrder();
 
                 return true;
@@ -268,11 +221,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                 ascendingClickedTitle = false;
                 descendingClickedTitle = true;
+                ascendingClickedDate = false;
+                descendingClickedDate = false;
                 descendingOrder();
 
                 return true;
             }
             case R.id.ascendingDate: {
+                ascendingClickedTitle = false;
+                descendingClickedTitle = false;
                 ascendingClickedDate = true;
                 descendingClickedDate = false;
                 ascendingOrderByDate();
@@ -280,9 +237,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 return true;
             }
             case R.id.descendingDate: {
+                ascendingClickedTitle = false;
+                descendingClickedTitle = false;
                 ascendingClickedDate = false;
                 descendingClickedDate = true;
                 descendingOrderByDate();
+                return true;
             }
         }
 
@@ -347,26 +307,25 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         intent.putExtra("position", model.getId());
         startActivityForResult(intent, 2);
 
-        this.position = position;
-        this.positionUpdate= model.getId();
 
     }
 
     @Override
     public void onDelete(int position) {
 
-//        Log.d("delete", "onDelete: "+position);
 
         dialogClickListener = new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
 
                 switch (which) {
-                    case BUTTON_POSITIVE:
-                    {
+                    case BUTTON_POSITIVE: {
 
-                        String positionDelete= String.valueOf(arrayList.get(position).getId());
-                        dbHandler.deleteNotes(positionDelete);
+
+//  ---------------------------room db delete values------------------------------------------------
+                        notesViewModel.delete(arrayList.get(position));
+//  ---------------------------room db delete values------------------------------------------------
+
                         arrayList.remove(position);
                         adapter.notifyItemRemoved(position);
                         break;
@@ -386,7 +345,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         };
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setMessage("Are you sure ?").setPositiveButton("Delete", dialogClickListener).setNegativeButton("Cancel", dialogClickListener).show();
-
 
     }
 }

@@ -45,5 +45,10 @@ dependencies {
     implementation ("com.github.yukuku:ambilwarna:2.0.1")
     implementation ("com.github.bumptech.glide:glide:4.11.0")
 
+//    room database
+    implementation ("androidx.room:room-runtime:2.2.5")
+    annotationProcessor ("androidx.room:room-compiler:2.2.5")
+    implementation ("androidx.lifecycle:lifecycle-extensions:2.2.0")
+    annotationProcessor ("androidx.lifecycle:lifecycle-compiler:2.2.0")
 
 }

@@ -39,6 +39,7 @@
             android:layout_height="wrap_content"
             android:maxLength="15"
             android:text="Title"
+            android:layout_marginBottom="10dp"
             android:paddingHorizontal="3dp"
             android:textColor="@color/white"
             android:textSize="18sp"

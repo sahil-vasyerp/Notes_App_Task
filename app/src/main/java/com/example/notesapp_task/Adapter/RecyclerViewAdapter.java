@@ -19,20 +19,20 @@ import com.google.android.material.card.MaterialCardView;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.ViewHolder> {
 
-    private ArrayList<ExpenseModel> arrayList;
+    private List<ExpenseModel> arrayList;
     private OnClickListener onClickListener;
     String type;
     private Context context;
 
-    public RecyclerViewAdapter(ArrayList<ExpenseModel> arrayList, String type, OnClickListener onClickListener, Context context) {
+    public RecyclerViewAdapter(List<ExpenseModel> arrayList, String type, OnClickListener onClickListener, Context context) {
 
-        this.arrayList   = arrayList;
+        this.arrayList = arrayList;
         this.type = type;
         this.onClickListener = onClickListener;
         this.context = context;
@@ -77,33 +77,28 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
         holder.description.setText(expenseModel.getDescriptionNotes());
 
 
-
 //------------------------------time to time ago set------------------------------------------------
         try {
             @SuppressLint("SimpleDateFormat")
-            SimpleDateFormat format=new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
+            SimpleDateFormat format = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
             Date past = format.parse(expenseModel.getCreateDate());
-            Date now=new Date();
+            Date now = new Date();
 
-            long seconds= TimeUnit.MILLISECONDS.toSeconds(now.getTime() - past.getTime());
-            long minutes=TimeUnit.MILLISECONDS.toMinutes(now.getTime() - past.getTime());
-            long hours=TimeUnit.MILLISECONDS.toHours(now.getTime() - past.getTime());
-            long days=TimeUnit.MILLISECONDS.toDays(now.getTime() - past.getTime());
+            long seconds = TimeUnit.MILLISECONDS.toSeconds(now.getTime() - past.getTime());
+            long minutes = TimeUnit.MILLISECONDS.toMinutes(now.getTime() - past.getTime());
+            long hours = TimeUnit.MILLISECONDS.toHours(now.getTime() - past.getTime());
+            long days = TimeUnit.MILLISECONDS.toDays(now.getTime() - past.getTime());
 
 
-            if (seconds<60)
-            {
-                holder.date.setText(seconds+" second ago");
-            } else if (minutes<60)
-            {
-                holder.date.setText(minutes+" minutes ago");
-            } else if (hours<24)
-            {
-                holder.date.setText(hours+" hours ago");
-            } else
-            {
-                holder.date.setText(days+" days ago");
-                
+            if (seconds < 60) {
+                holder.date.setText(seconds + " second ago");
+            } else if (minutes < 60) {
+                holder.date.setText(minutes + " minutes ago");
+            } else if (hours < 24) {
+                holder.date.setText(hours + " hours ago");
+            } else {
+                holder.date.setText(days + " days ago");
+
             }
 
         } catch (ParseException e) {
@@ -111,28 +106,21 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
         }
 
 
-
 //        int a= position%4;
 
 
         if (type.equals("1")) {
 
-            holder.deleteNotesList.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    onClickListener.onDelete(holder.getAdapterPosition());
-                }
-            });
-            Glide.with(context).load(expenseModel.getImageUri()).into(holder.imgList);
+
+            if (expenseModel.getImageUri() == null) {
+                holder.imgList.setImageResource(R.drawable.baseline_notes_24);
+            } else {
+                Glide.with(context).load(expenseModel.getImageUri()).into(holder.imgList);
+            }
+
             holder.listCardView.setCardBackgroundColor(expenseModel.getColor());
 
         } else if (type.equals("2")) {
-            holder.deleteNotesList.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    onClickListener.onDelete(holder.getAdapterPosition());
-                }
-            });
 
             holder.gridCardView.setCardBackgroundColor(expenseModel.getColor());
 
@@ -142,6 +130,12 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 
         }
 
+        holder.deleteNotesList.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onClickListener.onDelete(holder.getAdapterPosition());
+            }
+        });
 
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -157,6 +151,15 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
     @Override
     public int getItemCount() {
         return arrayList.size();
+    }
+
+    public void setNotes(List<ExpenseModel> expenseModels) {
+        arrayList = expenseModels;
+        notifyDataSetChanged();
+    }
+    public List<ExpenseModel> getNotes(List<ExpenseModel> expenseModels)
+    {
+        return expenseModels;
     }
 
     public interface OnClickListener {

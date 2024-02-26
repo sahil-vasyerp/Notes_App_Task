@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -13,10 +12,11 @@ import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.ViewModelProviders;
 
 import com.bumptech.glide.Glide;
-import com.example.notesapp_task.DataBase.DBHandler;
 import com.example.notesapp_task.ModelClass.ExpenseModel;
+import com.example.notesapp_task.viewmodel.NotesViewModel;
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 import com.google.android.material.textfield.TextInputEditText;
 
@@ -30,20 +30,20 @@ import yuku.ambilwarna.AmbilWarnaDialog;
 
 public class Add_NotesActivity extends AppCompatActivity implements View.OnClickListener {
 
-    TextInputEditText etTitle, etDescription;
 
+    private NotesViewModel notesViewModel;
+    TextInputEditText etTitle, etDescription;
     ExtendedFloatingActionButton btnSave;
     ExpenseModel expenseModel;
     View picColorButton;
     ImageButton uploadImage;
-    ImageView showImage;
+    ImageView showImage, backButton;
     Context context;
     Date date;
     private String currentDate;
     int mDefaultColor;
     int SELECT_PICTURE = 200;
     String imageUri;
-    DBHandler dbHandler;
 
 
     @Override
@@ -54,6 +54,7 @@ public class Add_NotesActivity extends AppCompatActivity implements View.OnClick
 
         initViews();
         getValues();
+
     }
 
     private void getValues() {
@@ -69,7 +70,7 @@ public class Add_NotesActivity extends AppCompatActivity implements View.OnClick
         if (expenseModel != null) {
             etTitle.setText(expenseModel.getTitleNotes());
             etDescription.setText(expenseModel.getDescriptionNotes());
-            mDefaultColor= expenseModel.getColor();
+            mDefaultColor = expenseModel.getColor();
 
             if (expenseModel.getImageUri() != null) {
 
@@ -89,16 +90,18 @@ public class Add_NotesActivity extends AppCompatActivity implements View.OnClick
         picColorButton = findViewById(R.id.pick_color_button);
         uploadImage = findViewById(R.id.uploadImage);
         showImage = findViewById(R.id.showImage);
+        backButton = findViewById(R.id.backButton);
 
 
         context = Add_NotesActivity.this;
-        dbHandler = new DBHandler(Add_NotesActivity.this);
         mDefaultColor = context.getColor(R.color.list_zero);
+        notesViewModel= ViewModelProviders.of(this).get(NotesViewModel.class);
 
 
         btnSave.setOnClickListener(this);
         picColorButton.setOnClickListener(this);
         uploadImage.setOnClickListener(this);
+        backButton.setOnClickListener(this);
 
 
         getDate();
@@ -126,29 +129,30 @@ public class Add_NotesActivity extends AppCompatActivity implements View.OnClick
         } else {
 
             int position = getIntent().getIntExtra("position", -1);
-            String clickPosition = String.valueOf(position);
 
 
-            Log.d("positionCheckAddd123", "addArraylist: " + clickPosition);
-
+            expenseModel=new ExpenseModel(0,addTitle,addDescription,mDefaultColor,imageUri,currentDate);
 
             if (position == -1) {
-                dbHandler.addNewNotes(addTitle, addDescription, mDefaultColor, imageUri, currentDate);
+
+
+//      -----------------------Room db value Store--------------------------------------------------
+                notesViewModel.insert(expenseModel);
+//      -----------------------Room db value Store--------------------------------------------------
+
+
             } else {
-                dbHandler.updateNotes(clickPosition, addTitle, addDescription, mDefaultColor, imageUri, currentDate);
+//      -----------------------Room db value update-------------------------------------------------
+                expenseModel.setId(position);
+                notesViewModel.update(expenseModel);
+//      -----------------------Room db value update-------------------------------------------------
+
 
 
             }
 
 
             Intent i = new Intent();
-            i.putExtra("position", position);
-            i.putExtra("title", addTitle);
-            i.putExtra("description", addDescription);
-            i.putExtra("date", currentDate);
-            i.putExtra("color", mDefaultColor);
-            i.putExtra("imageUri", imageUri);
-
 
             setResult(RESULT_OK, i);
             finish();
@@ -177,6 +181,10 @@ public class Add_NotesActivity extends AppCompatActivity implements View.OnClick
                 photoPickerIntent.setType("image/*");
                 photoPickerIntent.setAction(Intent.ACTION_GET_CONTENT);
                 startActivityForResult(Intent.createChooser(photoPickerIntent, "Select Picture"), SELECT_PICTURE);
+                break;
+            }
+            case R.id.backButton: {
+                finish();
                 break;
             }
         }
@@ -218,4 +226,6 @@ public class Add_NotesActivity extends AppCompatActivity implements View.OnClick
             }
         }
     }
+
+
 }

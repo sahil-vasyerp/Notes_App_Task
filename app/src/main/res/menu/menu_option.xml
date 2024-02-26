@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <item android:title="Sort" >
+    <item android:title="Sort" app:showAsAction="ifRoom" android:icon="@drawable/baseline_sort_24">
         <menu>
-            <item android:title="Sort By Alphabetical">
+            <item android:title="Sort By Alphabetical" >
 
                 <menu>
                     <item android:id="@+id/ascendingList" android:title="Ascending"/>
@@ -20,7 +21,7 @@
 
         </menu>
     </item>
-        <item android:title="View">
+        <item android:title="View" app:showAsAction="always" android:icon="@drawable/baseline_view_list_24">
             <menu>
                 <item android:id="@+id/listViewLayout" android:title="List View" />
                 <item android:id="@+id/gridViewLayout" android:title="Grid View"/>

@@ -7,20 +7,30 @@
     tools:context=".Add_NotesActivity"
     android:background="@color/black">
 
+    <ImageView
+        android:id="@+id/backButton"
+        android:layout_width="50sp"
+        android:layout_height="60dp"
+        android:paddingHorizontal="11dp"
+        android:src="@drawable/baseline_arrow_back_ios_24"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+
     <com.google.android.material.textfield.TextInputEditText
         android:id="@+id/etTitle"
         android:layout_width="0dp"
         android:layout_height="60sp"
-        android:hint="Title"
-        android:textColorHint="@color/white"
         android:background="@null"
-        android:textColor="@color/white"
+        android:hint="Title"
         android:inputType="text"
-        android:padding="20sp"
         android:maxLength="50"
+
+        android:textColor="@color/white"
+        android:textColorHint="@color/white"
         android:textStyle="bold"
         app:layout_constraintEnd_toStartOf="@+id/toolBarAddNotes"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/backButton"
         app:layout_constraintTop_toTopOf="parent" />
 
     <View
@@ -41,17 +51,16 @@
         android:id="@+id/etDescription"
         android:layout_width="match_parent"
         android:layout_height="0sp"
-        android:padding="20sp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/etTitle"
-        android:inputType="textMultiLine"
         android:background="@null"
-        android:scrollbars="vertical"
-        android:hint="Add Notes Here"
-        android:textColorHint="@color/white"
-        android:textColor="@color/white"
         android:gravity="top|left"
-        />
+        android:hint="Add Notes Here"
+        android:inputType="textMultiLine"
+        android:padding="20sp"
+        android:scrollbars="vertical"
+        android:textColor="@color/white"
+        android:textColorHint="@color/white"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/etTitle" />
     <ImageView
         android:id="@+id/showImage2"
         android:layout_width="40dp"
